@@ -1,0 +1,17 @@
+[
+    {
+        "id": 1,
+        "nombre": "Mouse inalámbrico",
+        "precio": 25.0
+    },
+    {
+        "id": 2,
+        "nombre": "Teclado",
+        "precio": 35.0
+    },
+    {
+        "id": 4,
+        "nombre": "Parlante Bluetooth",
+        "precio": 35.0
+    }
+]
