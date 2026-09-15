@@ -1,9 +1,9 @@
 import requests
 
 nuevo_producto = {
-    "id": 5,
-    "nombre": "Cámara web",
-    "precio": 40.0
+    "id": 3,
+    "nombre": "Monitor",
+    "precio": 220.0
 }
 
 try:

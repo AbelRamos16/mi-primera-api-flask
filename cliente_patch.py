@@ -1,12 +1,12 @@
 import requests
 
 cambio = {
-    "precio": 50.0
+    "precio": 250.0
 }
 
 try:
     respuesta = requests.patch(
-        "http://127.0.0.1:5000/productos/5",
+        "http://127.0.0.1:5000/productos/3",
         json=cambio,
         timeout=10
     )

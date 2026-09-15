@@ -2,7 +2,7 @@ import requests
 
 try:
     respuesta = requests.delete(
-        "http://127.0.0.1:5000/productos/5",
+        "http://127.0.0.1:5000/productos/3",
         timeout=10
     )
     

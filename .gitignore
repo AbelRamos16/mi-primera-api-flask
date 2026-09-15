@@ -2,3 +2,4 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+base_datos/test_productos.db

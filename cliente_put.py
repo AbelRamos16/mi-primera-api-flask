@@ -1,14 +1,14 @@
 import requests
 
 producto_cambio = {
-    "id": 5,
-    "nombre": "Cámara web HD",
+    "id": 2,
+    "nombre": "Teclado mecánico",
     "precio": 45.0
 }
 
 try:
     respuesta = requests.put(
-        "http://127.0.0.1:5000/productos/5",
+        "http://127.0.0.1:5000/productos/2",
         json=producto_cambio,
         timeout=10
     )

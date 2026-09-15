@@ -1,40 +1,50 @@
 from flask import Blueprint, jsonify, request
 
-from servicios.archivo import cargar_productos, guardar_productos
+from servicios.productos_db import (
+    obtener_todos_los_productos,
+    obtener_producto_por_id,
+    crear_producto as crear_producto_db,
+    actualizar_producto as actualizar_producto_db,
+    eliminar_producto as eliminar_producto_db
+)
 from servicios.validaciones import (
     validar_datos_producto,
     validar_cambios_producto
 )
 
-productos_bp = Blueprint("productos", __name__)
 
-productos = cargar_productos()
+productos_bp = Blueprint("productos", __name__)
 
 
 @productos_bp.get("/productos")
 def obtener_productos():
+    productos = obtener_todos_los_productos()
+
     return jsonify(productos)
 
 
 @productos_bp.get("/productos/<int:producto_id>")
 def obtener_producto(producto_id):
-    for producto in productos:
-        if producto["id"] == producto_id:
-            return jsonify(producto)
+    producto = obtener_producto_por_id(producto_id)
 
-    return jsonify({
-        "error": "Producto no encontrado"
-    }), 404
+    if producto is None:
+        return jsonify({
+            "error": "Producto no encontrado"
+        }), 404
+
+    return jsonify(producto)
 
 
 @productos_bp.get("/estado")
 def obtener_estado():
+    productos = obtener_todos_los_productos()
+
     return jsonify({
         "estado": "activa",
         "productos_registrados": len(productos)
     })
-    
-    
+
+
 @productos_bp.post("/productos")
 def crear_producto():
     nuevo_producto = request.get_json()
@@ -59,14 +69,12 @@ def crear_producto():
             "error": error_validacion
         }), 400
 
-    for producto in productos:
-        if producto["id"] == nuevo_producto["id"]:
-            return jsonify({
-                "error": "Ya existe un producto con ese id"
-            }), 400
+    producto_creado = crear_producto_db(nuevo_producto)
 
-    productos.append(nuevo_producto)
-    guardar_productos(productos)
+    if not producto_creado:
+        return jsonify({
+            "error": "Ya existe un producto con ese id"
+        }), 400
 
     return jsonify(nuevo_producto), 201
 
@@ -100,19 +108,25 @@ def reemplazar_producto(producto_id):
             "error": "El id del JSON debe coincidir con el id de la URL"
         }), 400
 
-    for indice, producto in enumerate(productos):
-        if producto["id"] == producto_id:
-            productos[indice] = producto_actualizado
-            guardar_productos(productos)
+    cambios = {
+        "nombre": producto_actualizado["nombre"],
+        "precio": producto_actualizado["precio"]
+    }
 
-            return jsonify(producto_actualizado), 200
+    actualizado = actualizar_producto_db(producto_id, cambios)
 
-    return jsonify({
-        "error": "Producto no encontrado"
-    }), 404
-    
+    if not actualizado:
+        return jsonify({
+            "error": "Producto no encontrado"
+        }), 404
+
+    producto = obtener_producto_por_id(producto_id)
+
+    return jsonify(producto), 200
+
+
 @productos_bp.patch("/productos/<int:producto_id>")
-def actualizar_producto(producto_id):
+def actualizar_producto_parcial(producto_id):
     cambios = request.get_json()
 
     if not cambios:
@@ -127,29 +141,30 @@ def actualizar_producto(producto_id):
             "error": error_validacion
         }), 400
 
-    for producto in productos:
-        if producto["id"] == producto_id:
-            producto.update(cambios)
-            guardar_productos(productos)
+    actualizado = actualizar_producto_db(producto_id, cambios)
 
-            return jsonify(producto), 200
+    if not actualizado:
+        return jsonify({
+            "error": "Producto no encontrado"
+        }), 404
 
-    return jsonify({
-        "error": "Producto no encontrado"
-    }), 404
-    
+    producto = obtener_producto_por_id(producto_id)
+
+    return jsonify(producto), 200
+
+
 @productos_bp.delete("/productos/<int:producto_id>")
 def eliminar_producto(producto_id):
-    for indice, producto in enumerate(productos):
-        if producto["id"] == producto_id:
-            eliminado = productos.pop(indice)
-            guardar_productos(productos)
+    producto = obtener_producto_por_id(producto_id)
 
-            return jsonify({
-                "mensaje": "Producto eliminado correctamente",
-                "producto": eliminado
-            }), 200
+    if producto is None:
+        return jsonify({
+            "error": "Producto no encontrado"
+        }), 404
+
+    eliminar_producto_db(producto_id)
 
     return jsonify({
-        "error": "Producto no encontrado"
-    }), 404
+        "mensaje": "Producto eliminado correctamente",
+        "producto": producto
+    }), 200
