@@ -1,9 +1,10 @@
 import requests
 
 nuevo_producto = {
-    "id": 3,
-    "nombre": "Monitor",
-    "precio": 220.0
+    "id": 6,
+    "nombre": "Auriculares",
+    "precio": 20.0,
+    "categoria_id": 1
 }
 
 try:
@@ -13,10 +14,10 @@ try:
         timeout=10
     )
     
-    respuesta.raise_for_status()
-
     print(respuesta.json())
     print(respuesta.status_code)
+    
+    respuesta.raise_for_status()
 
 except requests.RequestException as error:
     print(f"No se pudo conectar con la API: {error}")

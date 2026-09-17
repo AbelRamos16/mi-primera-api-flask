@@ -1,7 +1,7 @@
 import requests
 
 cambio = {
-    "precio": 250.0
+    "categoria_id": 2
 }
 
 try:
@@ -11,10 +11,12 @@ try:
         timeout=10
     )
     
-    respuesta.raise_for_status()
+    
 
     print(respuesta.json())
     print(respuesta.status_code)
+    
+    respuesta.raise_for_status()
 
 except requests.RequestException as error:
     print(f"No se pudo actualizar el producto: {error}")

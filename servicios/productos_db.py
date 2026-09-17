@@ -7,12 +7,18 @@ def obtener_todos_los_productos():
     conexion = obtener_conexion()
 
     cursor = conexion.execute("""
-        SELECT id, nombre, precio
+        SELECT
+            productos.id,
+            productos.nombre,
+            productos.precio,
+            productos.categoria_id,
+            categorias.nombre AS categoria
         FROM productos
+        JOIN categorias
+            ON productos.categoria_id = categorias.id
     """)
 
     filas = cursor.fetchall()
-
     conexion.close()
 
     productos = []
@@ -21,7 +27,9 @@ def obtener_todos_los_productos():
         productos.append({
             "id": fila["id"],
             "nombre": fila["nombre"],
-            "precio": fila["precio"]
+            "precio": fila["precio"],
+            "categoria_id": fila["categoria_id"],
+            "categoria": fila["categoria"]
         })
 
     return productos
@@ -30,17 +38,20 @@ def obtener_todos_los_productos():
 def obtener_producto_por_id(producto_id):
     conexion = obtener_conexion()
 
-    cursor = conexion.execute(
-        """
-        SELECT id, nombre, precio
+    cursor = conexion.execute("""
+        SELECT
+            productos.id,
+            productos.nombre,
+            productos.precio,
+            productos.categoria_id,
+            categorias.nombre AS categoria
         FROM productos
-        WHERE id = ?
-        """,
-        (producto_id,)
-    )
+        JOIN categorias
+            ON productos.categoria_id = categorias.id
+        WHERE productos.id = ?
+    """, (producto_id,))
 
     fila = cursor.fetchone()
-
     conexion.close()
 
     if fila is None:
@@ -49,7 +60,9 @@ def obtener_producto_por_id(producto_id):
     return {
         "id": fila["id"],
         "nombre": fila["nombre"],
-        "precio": fila["precio"]
+        "precio": fila["precio"],
+        "categoria_id": fila["categoria_id"],
+        "categoria": fila["categoria"]
     }
 
 
@@ -59,13 +72,14 @@ def crear_producto(producto):
     try:
         conexion.execute(
             """
-            INSERT INTO productos (id, nombre, precio)
-            VALUES (?, ?, ?)
+            INSERT INTO productos (id, nombre, precio, categoria_id)
+            VALUES (?, ?, ?, ?)
             """,
             (
                 producto["id"],
                 producto["nombre"],
-                producto["precio"]
+                producto["precio"],
+                producto["categoria_id"]
             )
         )
 
@@ -128,3 +142,21 @@ def eliminar_producto(producto_id):
     conexion.close()
 
     return eliminado
+
+
+def existe_categoria(categoria_id):
+    conexion = obtener_conexion()
+
+    cursor = conexion.execute(
+        """
+        SELECT id
+        FROM categorias
+        WHERE id = ?
+        """,
+        (categoria_id,)
+    )
+
+    categoria = cursor.fetchone()
+    conexion.close()
+
+    return categoria is not None

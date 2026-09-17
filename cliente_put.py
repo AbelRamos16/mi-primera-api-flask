@@ -2,8 +2,9 @@ import requests
 
 producto_cambio = {
     "id": 2,
-    "nombre": "Teclado mecánico",
-    "precio": 45.0
+    "nombre": "Teclado actualizado",
+    "precio": 50.0,
+    "categoria_id": 99
 }
 
 try:
@@ -13,10 +14,11 @@ try:
         timeout=10
     )
     
-    respuesta.raise_for_status()
 
     print(respuesta.json())
     print(respuesta.status_code)
+    
+    respuesta.raise_for_status()
 
 except requests.RequestException as error:
     print(f"No se pudo reemplazar el producto: {error}")

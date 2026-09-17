@@ -5,7 +5,8 @@ from servicios.productos_db import (
     obtener_producto_por_id,
     crear_producto as crear_producto_db,
     actualizar_producto as actualizar_producto_db,
-    eliminar_producto as eliminar_producto_db
+    eliminar_producto as eliminar_producto_db,
+    existe_categoria
 )
 from servicios.validaciones import (
     validar_datos_producto,
@@ -63,6 +64,11 @@ def crear_producto():
             }), 400
 
     error_validacion = validar_datos_producto(nuevo_producto)
+    
+    if not existe_categoria(nuevo_producto["categoria_id"]):
+        return jsonify({
+            "error": "La categoría no existe"
+        }), 400
 
     if error_validacion:
         return jsonify({
@@ -88,7 +94,7 @@ def reemplazar_producto(producto_id):
             "error": "No se enviaron datos JSON"
         }), 400
 
-    campos_requeridos = ["id", "nombre", "precio"]
+    campos_requeridos = ["id", "nombre", "precio", "categoria_id"]
 
     for campo in campos_requeridos:
         if campo not in producto_actualizado:
@@ -107,13 +113,22 @@ def reemplazar_producto(producto_id):
         return jsonify({
             "error": "El id del JSON debe coincidir con el id de la URL"
         }), 400
+        
+    if not existe_categoria(producto_actualizado["categoria_id"]):
+        return jsonify({
+            "error": "La categoría no existe"
+        }), 400
 
     cambios = {
         "nombre": producto_actualizado["nombre"],
         "precio": producto_actualizado["precio"]
     }
 
-    actualizado = actualizar_producto_db(producto_id, cambios)
+    actualizado = actualizar_producto_db(producto_id, {
+        "nombre": producto_actualizado["nombre"],
+        "precio": producto_actualizado["precio"],
+        "categoria_id": producto_actualizado["categoria_id"]
+    })
 
     if not actualizado:
         return jsonify({
@@ -135,6 +150,12 @@ def actualizar_producto_parcial(producto_id):
         }), 400
 
     error_validacion = validar_cambios_producto(cambios)
+    
+    if "categoria_id" in cambios:
+        if not existe_categoria(cambios["categoria_id"]):
+            return jsonify({
+                "error": "La categoría no existe"
+            }), 400
 
     if error_validacion:
         return jsonify({
